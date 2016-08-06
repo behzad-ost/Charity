@@ -23,7 +23,9 @@ var users = require('./routes/users');
 var app = express();
 
 mongoose.connect('mongodb://localhost:27017/nodeauth');
-
+if(process.env.OPENSHIFT_MONGODB_DB_URL){
+  mongodb_connection_string = process.env.OPENSHIFT_MONGODB_DB_URL + charity;
+}
 
 db.once('open', function() {
   // we're connected!
