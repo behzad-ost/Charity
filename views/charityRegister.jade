@@ -1,0 +1,26 @@
+extends layout
+
+block content
+	h1 ثبت نام
+	p فرم را پر کنید
+	ul.errors
+		if errors
+			each error, i in errors
+				li.alert.alert-danger #{error.msg}
+	form(method='post',action='register')
+		.form-group
+			label نام
+			input.form-control(name='name',type='text',placeholder='نام را وارد کنید',value=name)
+		.form-group
+			label ایمیل
+			input.form-control(name='email',type='text',placeholder='ایمیل را وارد کنید',value=email)
+		.form-group
+			label نام کاربری
+			input.form-control(name='username',type='text',placeholder='نام کاربری را وارد کنید',value=username)
+		.form-group
+			label رمز عبور
+			input.form-control(name='password',type='password',placeholder='رمز عبور را وارد کنید')
+		.form-group
+			label تکرار رمز عبور
+			input.form-control(name='password2',type='password',placeholder='رمز عبور را دوباره وارد کنید')
+		input.btn.btn-default(name='submit', type='submit',value='ثبت نام')

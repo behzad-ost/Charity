@@ -1,0 +1,20 @@
+extends layout
+
+block content
+	h1 ثبت نام
+	p فرم را پر کنید
+	ul.errors
+		if errors
+			each error, i in errors
+				li.alert.alert-danger #{error.msg}
+	form(method='post',action='personregister')
+		.form-group
+			label نام
+			input.form-control(name='name',type='text',placeholder='نام را وارد کنید',value=name)
+		.form-group
+			label شماره شناسنامه
+			input.form-control(name='ssnumber',type='text',placeholder='شماره شناسنامه را وارد کنید',value=ssnumber)
+		.form-group
+			label خیریه
+			input.form-control(name='charity',type='text',placeholder='نام خیریه را وارد کنید',value=charity)
+		input.btn.btn-default(name='submit', type='submit',value='ثبت')

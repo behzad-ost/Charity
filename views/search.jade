@@ -1,0 +1,12 @@
+extends layout
+
+block content
+	h1 جستجو
+	hr
+	if notFoundMsg
+		li.alert.alert-danger #{notFoundMsg}
+	form(method='get',action='/users/search')
+		.form-group
+			label شماره شناسنامه
+			input.form-control(name='SSnumber',type='text')
+		input.btn.btn-default(name='submit', type='submit',value='جستجو')
