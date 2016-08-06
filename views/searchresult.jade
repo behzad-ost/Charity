@@ -1,0 +1,13 @@
+extends layout
+
+block content
+	h1 جستجو
+	hr
+	ul.list-group 
+		li.list-group-item() نام:  #{name}
+		li.list-group-item() شماره شناسنامه: #{ssnumber}
+		li.list-group-item() تاریخ آخرین پرداخت: #{lastrecieve}
+	ul.list-group پرداخت ها
+		if payments
+			each payment, i in payments
+				li.list-group-item() مبلغ: #{payment.amount}  &nbsp &nbsp &nbsp &nbsp &nbsp علت: #{payment.reason} &nbsp &nbsp &nbsp &nbsp &nbsp تاریخ: #{payment.date}

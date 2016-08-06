@@ -3,13 +3,17 @@ extends layout
 block content
 	h1 پرداخت
 	hr
+	ul.errors
+		if errors
+			each error, i in errors
+				li.alert.alert-danger #{error.msg}
 	form(method='post',action='/users/payment')
 		.form-group
 			label شماره شناسنامه
 			input.form-control(name='ssnumber',type='text')
 		.form-group
 			label مبلغ
-			input.form-control(name='amount',type='text')
+			input.form-control(name='amount',type='number')
 		.form-group
 			label علت پرداخت
 			input.form-control(name='reason',type='text')

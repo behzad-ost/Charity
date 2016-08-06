@@ -1,6 +1,5 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
-var jdate = require('jdate').JDate();
 
 // mongoose.connect('mongodb://localhost:27017/nodeauth');
 
@@ -15,6 +14,10 @@ var paymentSchema = new Schema({
 	reason: {
 		type: String,
 		required: true
+	},
+	date: {
+		type: String,
+		required:true
 	}
 }, {
 	timestamps: true
@@ -39,7 +42,6 @@ var personSchema = new Schema({
 	},
 	lastrecieve:{
 		type: String
-		// ,default: jdate.toString()
 	},
 	payments:[paymentSchema]
 }, {

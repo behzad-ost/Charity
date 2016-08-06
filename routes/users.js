@@ -2,13 +2,14 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var jdate = require('jdate').JDate();
+var getDate = require('../date');
 var User = require('../models/user.js');
 var Persons = require('../models/person');
 
 //var Payment = Person.payment;
 // var bodyParser = require('body-parser');
 // router.use(bodyParser.json());
+
 function ensureAuth(req, res, next) {
 	if (req.isAuthenticated()) {
 		return next();
@@ -22,13 +23,15 @@ router.get('/', function(req, res, next) {
 
 router.get('/register', function(req, res, next) {
 	res.render('charityRegister', {
-		'title': 'Register'
+		'title': 'Register',
+		user: req.user
 	});
 });
 
 router.get('/login', function(req, res, next) {
 	res.render('login', {
-		title: 'Login'
+		title: 'Login',
+		user: req.user
 	});
 });
 
@@ -54,6 +57,7 @@ router.post('/register', function(req, res, next) {
 		// res.send(errors);
 		res.render('charityRegister', {
 			title: 'Register',
+			user: req.user,
 			errors: errors,
 			name: req.body.name,
 			email: req.body.email,
@@ -77,7 +81,7 @@ router.post('/register', function(req, res, next) {
 		});
 
 		//Message
-		req.flash('success', 'You are now registered!');
+		req.flash('success', 'ثبت کاربر با موفقیت انجام شد.');
 		res.location('/');
 		res.redirect('/');
 	}
@@ -101,7 +105,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 		if (!user) {
 			console.log("Unknown User.");
 			return done(null, false, {
-				message: 'Unknown User.'
+				message: 'کابر مورد نظر یافت نشد.'
 			});
 		}
 
@@ -112,7 +116,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 			} else {
 				console.log("Invalid Password");
 				return done(null, false, {
-					message: 'Invalid Password'
+					message: 'رمز عبور نامعتبر'
 				});
 			}
 		})
@@ -121,37 +125,54 @@ passport.use(new LocalStrategy(function(username, password, done) {
 
 router.post('/login', passport.authenticate('local', {
 	failureRedirect: '/users/login',
-	failureFlash: 'Invalid username or password'
+	failureFlash: 'نام کاربری یا رمز عبور نامعتبر میباشد.'
 }), function(req, res) {
 	console.log("Authentication Successful!");
-	req.flash('success', 'You are Logged in');
+	//req.flash('success', '');
 	res.redirect('/');
 });
 
 router.get('/logout', function(req, res) {
 	req.logout();
-	req.flash('success', 'You have Logged out');
+	// req.flash('success', 'You have Logged out');
 	res.redirect('/users/login');
 });
 
 router.get('/search', ensureAuth, function(req, res, next) {
 	if (!req.query.hasOwnProperty('SSnumber')) {
 		res.render('search', {
-			title: 'Search'
+			title: 'Search',
+			user: req.user
 		});
 	} else {
 		var SSnumber = req.query.SSnumber;
 
+		if (typeof SSnumber != 'number') {
+			res.render('search', {
+				title: 'Search',
+				notFoundMsg: "شماره شناسنامه نامعتبر میباشد.",
+				user: req.user
+			});
+			return;
+		}
 		Persons.findOne({
 			SSnumber: SSnumber
 		}, function(err, person) {
 			if (err) throw err;
 			if (person) {
-				res.json(person);
+				console.log(person.name);
+				res.render('searchresult', {
+					name: person.name,
+					ssnumber: person.SSnumber,
+					payments: person.payments,
+					lastrecieve: person.lastrecieve,
+					user: req.user
+				})
 			} else {
 				res.render('search', {
 					title: 'Search',
-					notFoundMsg: "فرد مورد نظر یافت نشد."
+					notFoundMsg: "فرد مورد نظر یافت نشد.",
+					user: req.user
 				});
 			}
 		});
@@ -171,16 +192,27 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 	var ssnumber = req.body.ssnumber;
 	var charity = req.body.charity;
 
+
 	req.check('name', 'نام الزامیست').notEmpty();
 	req.check('ssnumber', 'شماره شناسنامه الزامیست').notEmpty();
 	// req.check('charity', 'خیریه الزامیست').notEmpty();
 
 	var errors = req.validationErrors();
+	if (!(typeof req.body.ssnumber === 'number')) {
+		req.flash('error', 'شماره شناسنامه معتبر نیست.');
+		res.render('personRegister', {
+			title: 'Person Register',
+			charity: req.user.name,
+			user: req.user
+		});
+		return;
+	}
 
 	if (errors) {
 		res.render('personRegister', {
 			title: 'Person Register',
 			errors: errors,
+			user: req.user,
 			name: req.body.name,
 			ssnumber: req.body.ssnumber,
 			charity: charity
@@ -190,7 +222,7 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 		var newPerson = Persons({
 			name: name,
 			SSnumber: ssnumber,
-			charity: charity
+			charity: req.user.name
 		});
 
 		//Create User
@@ -200,7 +232,7 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 		});
 
 		//Message
-		req.flash('success', 'Person registered!');
+		req.flash('success', 'ثبت فرد با موفقیت انجام شد.');
 		res.location('/');
 		res.redirect('/');
 	}
@@ -209,7 +241,8 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 
 router.get('/payment', ensureAuth, function(req, res, next) {
 	res.render('payment', {
-		title: 'Payment'
+		title: 'Payment',
+		user: req.user
 	});
 });
 
@@ -229,6 +262,7 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 		res.render('payment', {
 			title: 'Payment',
 			errors: errors,
+			user: req.user,
 			ssnumber: req.body.ssnumber,
 			amount: req.body.amount,
 			reason: req.body.reason
@@ -236,18 +270,21 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 		return;
 	} else {
 
-		//var newPayment = Payment();
+		var payment = {
+			amount: amount,
+			reason: reason,
+			date: getDate()
+		}
+
 		Persons.findOne({
 			SSnumber: SSnumber
 		}, function(err, person) {
 			if (err) throw err;
-			person.payments.push({
-				amount: amount,
-				reason: reason
-			});
+			person.payments.push(payment);
 			console.log(person.payments);
-			person.lastrecieve = jdate.toString();
+			person.lastrecieve = getDate();
 			person.save();
+
 		});
 
 		//Message
