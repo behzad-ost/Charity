@@ -147,14 +147,14 @@ router.get('/search', ensureAuth, function(req, res, next) {
 	} else {
 		var SSnumber = req.query.SSnumber;
 
-		if (typeof SSnumber != 'number') {
-			res.render('search', {
-				title: 'Search',
-				notFoundMsg: "شماره شناسنامه نامعتبر میباشد.",
-				user: req.user
-			});
-			return;
-		}
+		// if (typeof SSnumber != 'number') {
+		// 	res.render('search', {
+		// 		title: 'Search',
+		// 		notFoundMsg: "شماره شناسنامه نامعتبر میباشد.",
+		// 		user: req.user
+		// 	});
+		// 	return;
+		// }
 		Persons.findOne({
 			SSnumber: SSnumber
 		}, function(err, person) {
@@ -198,15 +198,15 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 	// req.check('charity', 'خیریه الزامیست').notEmpty();
 
 	var errors = req.validationErrors();
-	if (!(typeof req.body.ssnumber === 'number')) {
-		req.flash('error', 'شماره شناسنامه معتبر نیست.');
-		res.render('personRegister', {
-			title: 'Person Register',
-			charity: req.user.name,
-			user: req.user
-		});
-		return;
-	}
+	// if (typeof req.body.ssnumber != 'number') {
+	// 	req.flash('error', 'شماره شناسنامه معتبر نیست.');
+	// 	res.render('personRegister', {
+	// 		title: 'Person Register',
+	// 		charity: req.user.name,
+	// 		user: req.user
+	// 	});
+	// 	return;
+	// }
 
 	if (errors) {
 		res.render('personRegister', {
