@@ -4,7 +4,7 @@ var router = express.Router();
 // home page
 router.get('/', ensureAuth, function(req, res, next) {
 	res.render('index', {
-		title: 'Members',
+		title: 'Main Page',
 		user:req.user
 	});
 });
