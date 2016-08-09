@@ -4,7 +4,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var getDate = require('../date');
 var User = require('../models/user.js');
-var Persons = require('../models/person');
+var Person = require('../models/person');
 
 //var Payment = Person.payment;
 // var bodyParser = require('body-parser');
@@ -136,6 +136,7 @@ router.get('/logout', function(req, res) {
 	req.logout();
 	// req.flash('success', 'You have Logged out');
 	res.redirect('/users/login');
+	f
 });
 
 router.get('/search', ensureAuth, function(req, res, next) {
@@ -155,7 +156,7 @@ router.get('/search', ensureAuth, function(req, res, next) {
 		// 	});
 		// 	return;
 		// }
-		Persons.findOne({
+		Person.findOne({
 			SSnumber: SSnumber
 		}, function(err, person) {
 			if (err) throw err;
@@ -193,49 +194,65 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 	var charity = req.body.charity;
 
 
-	req.check('name', 'نام الزامیست').notEmpty();
-	req.check('ssnumber', 'شماره شناسنامه الزامیست').notEmpty();
-	// req.check('charity', 'خیریه الزامیست').notEmpty();
 
-	var errors = req.validationErrors();
-	// if (typeof req.body.ssnumber != 'number') {
-	// 	req.flash('error', 'شماره شناسنامه معتبر نیست.');
-	// 	res.render('personRegister', {
-	// 		title: 'Person Register',
-	// 		charity: req.user.name,
-	// 		user: req.user
-	// 	});
-	// 	return;
-	// }
+	Person.findOne({
+		SSnumber: ssnumber
+	}, function(err, person) {
+		if (err) throw err;
+		if (person) {
+			// console.log(person);
+			req.flash('error', 'شماره شناسنامه قبلا ثبت شده است.');
+			res.location('personregister');
+			res.redirect('personregister');
+		} else {
+			req.check('name', 'نام الزامیست').notEmpty();
+			req.check('ssnumber', 'شماره شناسنامه الزامیست').notEmpty();
+			// req.check('charity', 'خیریه الزامیست').notEmpty();
 
-	if (errors) {
-		res.render('personRegister', {
-			title: 'Person Register',
-			errors: errors,
-			user: req.user,
-			name: req.body.name,
-			ssnumber: req.body.ssnumber,
-			charity: charity
-		});
-		return;
-	} else {
-		var newPerson = Persons({
-			name: name,
-			SSnumber: ssnumber,
-			charity: req.user.name
-		});
+			var errors = req.validationErrors();
+			// if (typeof req.body.ssnumber != 'number') {
+			// 	req.flash('error', 'شماره شناسنامه معتبر نیست.');
+			// 	res.render('personRegister', {
+			// 		title: 'Person Register',
+			// 		charity: req.user.name,
+			// 		user: req.user
+			// 	});
+			// 	return;
+			// }
 
-		//Create User
-		Persons.createPerson(newPerson, function(err, person) {
-			if (err) throw err;
-			console.log(person);
-		});
+			if (errors) {
+				res.render('personRegister', {
+					title: 'Person Register',
+					errors: errors,
+					user: req.user,
+					name: req.body.name,
+					ssnumber: req.body.ssnumber,
+					charity: charity
+				});
+				return;
+			} else {
+				var newPerson = Person({
+					name: name,
+					SSnumber: ssnumber,
+					charity: req.user.name
+				});
 
-		//Message
-		req.flash('success', 'ثبت فرد با موفقیت انجام شد.');
-		res.location('/');
-		res.redirect('/');
-	}
+				//Create User
+				Person.createPerson(newPerson, function(err, person) {
+					if (err) throw err;
+					console.log(person);
+				});
+
+				//Message
+				req.flash('success', 'ثبت فرد با موفقیت انجام شد.');
+				res.location('payment');
+				res.redirect('payment');
+			}
+		}
+
+	})
+
+
 
 });
 
@@ -252,46 +269,61 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 	var amount = req.body.amount;
 	var reason = req.body.reason;
 
-	req.check('ssnumber', 'شماره شناسنامه الزامیست').notEmpty();
-	req.check('amount', 'مبلغ الزامیست').notEmpty();
-	req.check('reason', 'علت پرداخت را وارد کنید').notEmpty();
 
-	var errors = req.validationErrors();
+	Person.findOne({
+		SSnumber: SSnumber
+	},function(err, person) {
+		if (err) throw err;
+		if (person) {
+			req.check('ssnumber', 'شماره شناسنامه الزامیست').notEmpty();
+			req.check('amount', 'مبلغ الزامیست').notEmpty();
+			req.check('reason', 'علت پرداخت را وارد کنید').notEmpty();
 
-	if (errors) {
-		res.render('payment', {
-			title: 'Payment',
-			errors: errors,
-			user: req.user,
-			ssnumber: req.body.ssnumber,
-			amount: req.body.amount,
-			reason: req.body.reason
-		});
-		return;
-	} else {
+			var errors = req.validationErrors();
 
-		var payment = {
-			amount: amount,
-			reason: reason,
-			date: getDate()
+			if (errors) {
+				res.render('payment', {
+					title: 'Payment',
+					errors: errors,
+					user: req.user,
+					ssnumber: req.body.ssnumber,
+					amount: req.body.amount,
+					reason: req.body.reason
+				});
+				return;
+			} else {
+
+				var payment = {
+					amount: amount,
+					reason: reason,
+					date: getDate()
+				}
+
+				Person.findOne({
+					SSnumber: SSnumber
+				}, function(err, person) {
+					if (err) throw err;
+					person.payments.push(payment);
+					console.log(person.payments);
+					person.lastrecieve = getDate();
+					person.save();
+
+				});
+
+				//Message
+				req.flash('success', 'پرداخت با موفقیت ثبت شد.');
+				res.location('/');
+				res.redirect('/');
+			}
+		} else {
+			req.flash('error', 'فرد مورد نظر یافت نشد.');
+			res.location('payment');
+			res.redirect('payment');
 		}
+	})
 
-		Persons.findOne({
-			SSnumber: SSnumber
-		}, function(err, person) {
-			if (err) throw err;
-			person.payments.push(payment);
-			console.log(person.payments);
-			person.lastrecieve = getDate();
-			person.save();
 
-		});
 
-		//Message
-		req.flash('success', 'پرداخت با موفقیت ثبت شد.');
-		res.location('/');
-		res.redirect('/');
-	}
 });
 
 

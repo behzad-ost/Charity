@@ -3,7 +3,7 @@ var Schema = mongoose.Schema;
 
 // mongoose.connect('mongodb://localhost:27017/nodeauth');
 
-var db = mongoose.connection;
+// var db = mongoose.connection;
 
 
 var paymentSchema = new Schema({
