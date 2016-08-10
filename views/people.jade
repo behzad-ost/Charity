@@ -1,0 +1,31 @@
+extends layout
+
+block content
+	//- h1 افراد تحت پوشش
+	//- hr
+	//- ul.list-group 
+	//- 	li.list-group-item() خیریه:  #{user.name}
+	//- 	//- li.list-group-item() شماره شناسنامه: #{ssnumber}
+	//- 	//- li.list-group-item() تاریخ آخرین پرداخت: #{lastrecieve}
+	//- hr 
+	//- ul.list-group افراد
+	//- 	if people
+	//- 		each person, i in people
+	//- 			li.list-group-item() نام: #{person.name}  &nbsp &nbsp &nbsp &nbsp &nbsp شماره شناسنامه: #{person.SSnumber} &nbsp &nbsp &nbsp &nbsp &nbsp تاریخ آخرین پرداخت: #{person.lastrecieve}
+
+	.container
+		h1 افراد تحت پوشش
+		hr
+		table.table.table-hover()
+			thead
+				if people
+					tr
+						th.text-right نام
+						th.text-right شماره شناسنامه
+						th.text-right آخرین پرداخت
+				tbody
+					each person, i in people
+						tr
+							td.text-right #{person.name}
+							td.text-right #{person.SSnumber}
+							td.text-right #{person.lastrecieve}

@@ -1,0 +1,23 @@
+extends layout
+
+block content
+	.container
+		h1 پرداخت ها
+		hr
+		table.table.table-hover()
+			thead
+				if payments.length>0
+					tr
+						th.text-right تاریخ
+						th.text-right مبلغ
+						th.text-right نام شخص
+						th.text-right شماره شناسنامه
+						th.text-right علت
+				tbody
+					each payment, i in payments
+						tr
+							td.text-right #{payment.date}
+							td.text-right #{payment.amount}
+							td.text-right #{payment.name}
+							td.text-right #{payment.pssnumber}
+							td.text-right #{payment.reason}

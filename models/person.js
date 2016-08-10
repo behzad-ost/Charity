@@ -1,6 +1,9 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
+// var Payment = require('./payment');
+// var paymentSchema = Payment.paymentSchema;
+
 // mongoose.connect('mongodb://localhost:27017/nodeauth');
 
 // var db = mongoose.connection;
@@ -17,7 +20,7 @@ var paymentSchema = new Schema({
 	},
 	date: {
 		type: String,
-		required:true
+		required: true
 	}
 }, {
 	timestamps: true
@@ -28,22 +31,23 @@ var personSchema = new Schema({
 	name: {
 		type: String,
 		required: true,
-		trim:true
+		trim: true
 	},
 	SSnumber: {
 		type: Number,
 		required: true,
 		unique: true
 	},
-	charity:{
+	charity: {
 		type: String,
 		required: true,
-		trim:true
+		trim: true
 	},
-	lastrecieve:{
-		type: String
+	lastrecieve: {
+		type: String,
+		default: "پرداختی نداشته است"
 	},
-	payments:[paymentSchema]
+	payments: [paymentSchema]
 }, {
 	timestamps: true
 });
@@ -53,7 +57,7 @@ var Persons = mongoose.model('Person', personSchema);
 module.exports = Persons;
 
 module.exports.createPerson = function(newPerson, callback) {
-		newPerson.save(callback);	
+	newPerson.save(callback);
 }
 
 // module.exports.payment = Payments;

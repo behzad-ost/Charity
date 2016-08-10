@@ -13,7 +13,6 @@ html(dir='rtl')
 						span.icon-bar
 						span.icon-bar
 						span.icon-bar
-					a.navbar-brand(href='/') 
 				#navbar.collapse.navbar-collapse
 					ul.nav.navbar-nav.navbar-right
 						if !user
@@ -29,12 +28,19 @@ html(dir='rtl')
 						if user		
 							li(class=(title=="Search") ? "active" : '')
 								a(href='/users/search') جستجو
-							li(class=(title=="Person Register") ? "active" : '')
-								a(href='/users/personregister') ثبت نام فرد
+							li(class=(title=="History") ? "active" : '')
+								a(href='/users/history') مشاهده پرداخت ها
+							li(class=(title=="People") ? "active" : '')
+								a(href='/users/people') افراد تحت پوشش
 							li(class=(title=="Payment") ? "active" : '')
 								a(href='/users/payment') پرداخت
+							li(class=(title=="Person Register") ? "active" : '')
+								a(href='/users/personregister') ثبت نام فرد
+							li(class=(title=="Main Page") ? "active" : '')
+								a(href='/') صفحه اصلی
 		.container
 			!=messages()
 			block content
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
+	//- script(src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js')
 	script(src='javascripts/bootstrap.js')

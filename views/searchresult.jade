@@ -1,13 +1,25 @@
 extends layout
 
 block content
-	h1 جستجو
-	hr
-	ul.list-group 
-		li.list-group-item() نام:  #{name}
+	.container
+		h1 جستجو
+		hr
+		ul.list-group 
+		li.list-group-item() نام و نام خانوادگی:  #{name}
 		li.list-group-item() شماره شناسنامه: #{ssnumber}
+		li.list-group-item() نام خیریه: #{charity}
 		li.list-group-item() تاریخ آخرین پرداخت: #{lastrecieve}
-	ul.list-group پرداخت ها
-		if payments
-			each payment, i in payments
-				li.list-group-item() مبلغ: #{payment.amount}  &nbsp &nbsp &nbsp &nbsp &nbsp علت: #{payment.reason} &nbsp &nbsp &nbsp &nbsp &nbsp تاریخ: #{payment.date}
+		if payments.length>0
+			table.table.table-hover()
+				thead
+					tr
+						th.text-right مبلغ
+						th.text-right علت
+						th.text-right تاریخ
+				h4 پرداخت ها
+				tbody 
+					each payment, i in payments
+						tr
+							td.text-right #{payment.amount}
+							td.text-right #{payment.reason}
+							td.text-right #{payment.date}

@@ -9,9 +9,6 @@ var passport = require('passport');
 var localStrategy = require('passport-local').Strategy;
 var bodyParser = require('body-parser');
 var multer = require('multer');
-var upload = multer({
-  dest: 'uploads/'
-});
 var flash = require('connect-flash');
 var mongo = require('mongodb');
 var mongoose = require('mongoose');
@@ -22,20 +19,9 @@ var users = require('./routes/users');
 
 var app = express();
 
+// mongoose.connect('mongodb://behzad-ost:behzad1996@ds145325.mlab.com:45325/behzaddb');
 
-
-mongoose.connect('mongodb://behzad-ost:behzad1996@ds145325.mlab.com:45325/behzaddb');
-
-// mongoose.connect('mongodb://localhost:27017/nodeauth');
-
-if(process.env.OPENSHIFT_MONGODB_DB_URL){
-  mongodb_connection_string = process.env.OPENSHIFT_MONGODB_DB_URL + charity;
-}
-
-// db.once('open', function() {
-//   // we're connected!
-//   console.log("Connected correctly to server");
-// });
+mongoose.connect('mongodb://localhost:27017/nodeauth');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

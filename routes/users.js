@@ -6,7 +6,7 @@ var getDate = require('../date');
 var User = require('../models/user.js');
 var Person = require('../models/person');
 
-//var Payment = Person.payment;
+// var Payment = Person.payment;
 // var bodyParser = require('body-parser');
 // router.use(bodyParser.json());
 
@@ -43,48 +43,65 @@ router.post('/register', function(req, res, next) {
 	var password = req.body.password;
 	var password2 = req.body.password2;
 
-	req.check('name', 'نام الزامیست').notEmpty();
-	req.check('email', 'ایمیل الزامیست').notEmpty();
-	req.checkBody('email', 'ایمیل نامعتبر').isEmail();
-	req.checkBody('username', 'نام کاربری الزامیست').notEmpty();
-	req.checkBody('password', 'رمز عبور الزامیست').notEmpty();
-	req.checkBody('password2', 'رمز مطابقت ندارد').equals(req.body.password);
+	User.find({
+		$or: [{
+			email: req.body.email
+		}, {
+			username: req.body.username
+		}]
+	}, function(err, users) {
+		if (err) throw err;
+		if (users.length>0) {
+			req.flash('error', 'نام کاربری یا ایمیل تکراری است.');
+			res.location('register');
+			res.redirect('register');
+		} else {
+			req.check('name', 'نام الزامیست').notEmpty();
+			req.check('email', 'ایمیل الزامیست').notEmpty();
+			req.checkBody('email', 'ایمیل نامعتبر').isEmail();
+			req.checkBody('username', 'نام کاربری الزامیست').notEmpty();
+			req.checkBody('password', 'رمز عبور الزامیست').notEmpty();
+			req.checkBody('password2', 'رمز مطابقت ندارد').equals(req.body.password);
 
-	var errors = req.validationErrors();
+			var errors = req.validationErrors();
 
-	if (errors) {
-		// console.log(errors);
-		// res.send(errors);
-		res.render('charityRegister', {
-			title: 'Register',
-			user: req.user,
-			errors: errors,
-			name: req.body.name,
-			email: req.body.email,
-			username: username,
-			password: password,
-			password2: password2
-		});
-		return;
-	} else {
-		var newUser = User({
-			name: name,
-			email: email,
-			username: username,
-			password: password
-		});
+			if (errors) {
+				// console.log(errors);
+				// res.send(errors);
+				res.render('charityRegister', {
+					title: 'Register',
+					user: req.user,
+					errors: errors,
+					name: req.body.name,
+					email: req.body.email,
+					username: username,
+					password: password,
+					password2: password2
+				});
+				return;
+			} else {
+				var newUser = User({
+					name: name,
+					email: email,
+					username: username,
+					password: password
+				});
 
-		//Create User
-		User.createUser(newUser, function(err, user) {
-			if (err) throw err;
-			console.log(user);
-		});
+				//Create User
+				User.createUser(newUser, function(err, user) {
+					if (err) throw err;
+					console.log(user);
+				});
 
-		//Message
-		req.flash('success', 'ثبت کاربر با موفقیت انجام شد.');
-		res.location('/');
-		res.redirect('/');
-	}
+				//Message
+				req.flash('success', 'ثبت کاربر با موفقیت انجام شد.');
+				res.location('/');
+				res.redirect('/');
+			}
+		}
+	});
+
+
 
 });
 
@@ -136,7 +153,6 @@ router.get('/logout', function(req, res) {
 	req.logout();
 	// req.flash('success', 'You have Logged out');
 	res.redirect('/users/login');
-	f
 });
 
 router.get('/search', ensureAuth, function(req, res, next) {
@@ -167,6 +183,7 @@ router.get('/search', ensureAuth, function(req, res, next) {
 					ssnumber: person.SSnumber,
 					payments: person.payments,
 					lastrecieve: person.lastrecieve,
+					charity:person.charity,
 					user: req.user
 				})
 			} else {
@@ -272,7 +289,7 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 
 	Person.findOne({
 		SSnumber: SSnumber
-	},function(err, person) {
+	}, function(err, person) {
 		if (err) throw err;
 		if (person) {
 			req.check('ssnumber', 'شماره شناسنامه الزامیست').notEmpty();
@@ -296,7 +313,8 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 				var payment = {
 					amount: amount,
 					reason: reason,
-					date: getDate()
+					date: getDate(),
+					user: person
 				}
 
 				Person.findOne({
@@ -321,10 +339,62 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 			res.redirect('payment');
 		}
 	})
-
-
-
 });
 
+
+router.get('/people', ensureAuth, function(req, res, next) {
+	var user = req.user;
+	Person.find({
+		charity: user.name
+	}, function(err, people) {
+		if (err) throw err;
+		if (people.length > 0) {
+			res.render('people', {
+				people: people,
+				user: user,
+				title: "People"
+			});
+		} else {
+			req.flash('error', 'در حال حاضر فردی تحت پوشش نیست');
+			res.location('/');
+			res.redirect('/');
+		}
+	})
+});
+
+
+router.get('/history', ensureAuth, function(req, res, next) {
+	Person.find({
+		'charity': req.user.name
+	}, function(err, people) {
+		if (err) throw err;
+		var payments = [];
+		people.forEach(function(person) {
+			if (person.payments.length > 0) {
+				for (var i = 0; i < person.payments.length; i++) {
+					var p = {};
+					p.date = person.payments[i].date;
+					p.amount = person.payments[i].amount;
+					p.reason = person.payments[i].reason;
+					p.name = person.name;
+					p.pssnumber = person.SSnumber;
+					payments.push(p);
+				}
+			}
+		});
+
+		if (payments.length > 0) {
+			res.render('history', {
+				payments: payments,
+				user: req.user,
+				title: "History"
+			})
+		} else {
+			req.flash('error', 'تا کنون پرداختی صورت نگرفته است.');
+			res.location('/');
+			res.redirect('/');
+		}
+	})
+});
 
 module.exports = router;
