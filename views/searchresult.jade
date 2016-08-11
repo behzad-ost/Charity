@@ -13,13 +13,15 @@ block content
 			table.table.table-hover()
 				thead
 					tr
-						th.text-right مبلغ
-						th.text-right علت
+						//- th.text-right ردیف
+						th.text-right مبلغ (تومان)
 						th.text-right تاریخ
+						th.text-right علت
 				h4 پرداخت ها
 				tbody 
 					each payment, i in payments
 						tr
+							//- td.text-right #{i+1}
 							td.text-right #{payment.amount}
-							td.text-right #{payment.reason}
 							td.text-right #{payment.date}
+							td.text-right #{payment.reason}

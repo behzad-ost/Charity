@@ -2,13 +2,10 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var getDate = require('../date');
 var User = require('../models/user.js');
 var Person = require('../models/person');
-
-// var Payment = Person.payment;
-// var bodyParser = require('body-parser');
-// router.use(bodyParser.json());
+var nodemailer = require('nodemailer');
+var utils = require('../utils');
 
 function ensureAuth(req, res, next) {
 	if (req.isAuthenticated()) {
@@ -51,7 +48,7 @@ router.post('/register', function(req, res, next) {
 		}]
 	}, function(err, users) {
 		if (err) throw err;
-		if (users.length>0) {
+		if (users.length > 0) {
 			req.flash('error', 'نام کاربری یا ایمیل تکراری است.');
 			res.location('register');
 			res.redirect('register');
@@ -93,15 +90,38 @@ router.post('/register', function(req, res, next) {
 					console.log(user);
 				});
 
-				//Message
-				req.flash('success', 'ثبت کاربر با موفقیت انجام شد.');
-				res.location('/');
-				res.redirect('/');
+
+				var transporter = nodemailer.createTransport({
+					service: 'Gmail',
+					auth: {
+						user: "oscharit@gmail.com",
+						pass: "behXchar"
+					}
+				});
+				var mailData = {
+					from: 'Charity Admin',
+					to: email,
+					subject: 'ثبت نام خیریه (NO REPLY)',
+					html: '<p> خیریه شما با موفقیت در سیستم ثبت شد</p> <ul><li>نام: ' + req.body.name + '</li><li>نام کاربری: ' + req.body.username + '</li><li>رمز عبور: ' + req.body.password + '</li></ul> '
+				};
+
+				transporter.sendMail(mailData, function(error, info) {
+					if (error) {
+						req.flash('error', 'اطلاعات شما در سیستم ثبت شد ولی ایمیل نا معتبر میباشد.');
+						res.location('/');
+						res.redirect('/');
+					} else {
+						req.flash('success', 'ثبت کاربر با موفقیت انجام شد.');
+						res.location('/');
+						res.redirect('/');
+						// console.log('Message Sent: ' + info.response);
+						// res.redirect('/about');
+						// res.send("");
+					}
+				});
 			}
 		}
 	});
-
-
 
 });
 
@@ -164,14 +184,8 @@ router.get('/search', ensureAuth, function(req, res, next) {
 	} else {
 		var SSnumber = req.query.SSnumber;
 
-		// if (typeof SSnumber != 'number') {
-		// 	res.render('search', {
-		// 		title: 'Search',
-		// 		notFoundMsg: "شماره شناسنامه نامعتبر میباشد.",
-		// 		user: req.user
-		// 	});
-		// 	return;
-		// }
+		SSnumber = utils.convert2per(SSnumber);
+
 		Person.findOne({
 			SSnumber: SSnumber
 		}, function(err, person) {
@@ -183,7 +197,7 @@ router.get('/search', ensureAuth, function(req, res, next) {
 					ssnumber: person.SSnumber,
 					payments: person.payments,
 					lastrecieve: person.lastrecieve,
-					charity:person.charity,
+					charity: person.charity,
 					user: req.user
 				})
 			} else {
@@ -210,7 +224,20 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 	var ssnumber = req.body.ssnumber;
 	var charity = req.body.charity;
 
+	ssnumber = utils.convert2eng(ssnumber);
 
+	if (isNaN(ssnumber)) {
+		req.flash('error', 'شماره شناسنامه نامعتبر');
+		res.render('personRegister', {
+			title: 'Person Register',
+			user: req.user,
+			name: req.body.name,
+			ssnumber: req.body.ssnumber
+		});
+		return;
+	}
+
+	ssnumber = utils.convert2per(ssnumber);
 
 	Person.findOne({
 		SSnumber: ssnumber
@@ -269,8 +296,6 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 
 	})
 
-
-
 });
 
 router.get('/payment', ensureAuth, function(req, res, next) {
@@ -285,6 +310,22 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 	var SSnumber = req.body.ssnumber;
 	var amount = req.body.amount;
 	var reason = req.body.reason;
+
+
+	if (isNaN(utils.convert2eng(amount))) {
+		req.flash('error', "مبلغ درست وارد نشده است.")
+		res.render('payment', {
+			title: 'Payment',
+			user: req.user,
+			ssnumber: req.body.ssnumber,
+			amount: req.body.amount,
+			reason: req.body.reason
+		});
+		return;
+	}
+
+	SSnumber = utils.convert2per(SSnumber);
+	amount = utils.convert2per(amount);
 
 
 	Person.findOne({
@@ -309,11 +350,11 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 				});
 				return;
 			} else {
-
+				var date =utils.convert2per(utils.getdate()); 
 				var payment = {
 					amount: amount,
 					reason: reason,
-					date: getDate(),
+					date: date,
 					user: person
 				}
 
@@ -322,8 +363,8 @@ router.post('/payment', ensureAuth, function(req, res, next) {
 				}, function(err, person) {
 					if (err) throw err;
 					person.payments.push(payment);
-					console.log(person.payments);
-					person.lastrecieve = getDate();
+					//console.log(person.payments);
+					person.lastrecieve = date;
 					person.save();
 
 				});

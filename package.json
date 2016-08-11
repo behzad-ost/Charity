@@ -21,6 +21,7 @@
     "mongoose": "*",
     "morgan": "~1.7.0",
     "multer": "*",
+    "nodemailer": "^2.5.0",
     "passport": "*",
     "passport-http": "*",
     "passport-local": "*",

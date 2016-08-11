@@ -19,9 +19,9 @@ var users = require('./routes/users');
 
 var app = express();
 
-mongoose.connect('mongodb://behzad-ost:behzad1996@ds145325.mlab.com:45325/behzaddb');
+// mongoose.connect('mongodb://behzad-ost:behzad1996@ds145325.mlab.com:45325/behzaddb');
 
-// mongoose.connect('mongodb://localhost:27017/nodeauth');
+mongoose.connect('mongodb://localhost:27017/nodeauth');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

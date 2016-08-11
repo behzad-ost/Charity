@@ -11,7 +11,7 @@ var Schema = mongoose.Schema;
 
 var paymentSchema = new Schema({
 	amount: {
-		type: Number,
+		type: String,
 		required: true
 	},
 	reason: {
@@ -34,7 +34,7 @@ var personSchema = new Schema({
 		trim: true
 	},
 	SSnumber: {
-		type: Number,
+		type: String,
 		required: true,
 		unique: true
 	},
