@@ -254,15 +254,6 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 			// req.check('charity', 'خیریه الزامیست').notEmpty();
 
 			var errors = req.validationErrors();
-			// if (typeof req.body.ssnumber != 'number') {
-			// 	req.flash('error', 'شماره شناسنامه معتبر نیست.');
-			// 	res.render('personRegister', {
-			// 		title: 'Person Register',
-			// 		charity: req.user.name,
-			// 		user: req.user
-			// 	});
-			// 	return;
-			// }
 
 			if (errors) {
 				res.render('personRegister', {
