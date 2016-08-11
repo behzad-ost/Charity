@@ -232,6 +232,7 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 			title: 'Person Register',
 			user: req.user,
 			name: req.body.name,
+			charity: req.user.name,
 			ssnumber: req.body.ssnumber
 		});
 		return;
@@ -262,7 +263,7 @@ router.post('/personregister', ensureAuth, function(req, res, next) {
 					user: req.user,
 					name: req.body.name,
 					ssnumber: req.body.ssnumber,
-					charity: charity
+					charity: req.user.name
 				});
 				return;
 			} else {
